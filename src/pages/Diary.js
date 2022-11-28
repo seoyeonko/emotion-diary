@@ -1,0 +1,18 @@
+// useParmas: 라이브러리에서 만든 사용자 정의 Hooks
+import { useParams } from 'react-router-dom';
+
+const Diary = () => {
+  // [Path Variable]: 경로에 변수 사용
+  // useParams 라는 prop 사용
+  const { id } = useParams();
+  console.log(id);
+
+  return (
+    <div>
+      <h1>Diary</h1>
+      <p>이곳은 일기 상세 페이지 입니다.</p>
+    </div>
+  );
+};
+
+export default Diary;
