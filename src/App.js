@@ -1,88 +1,105 @@
+import React, { useRef, useReducer } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import RouteTest from './components/RouteTest';
+import './App.css';
+
 import Home from './pages/Home';
 import Diary from './pages/Diary';
 import Edit from './pages/Edit';
 import New from './pages/New';
 
-import './App.css';
+const reducer = (state, action) => {
+  let newState = [];
+  switch (action.type) {
+    case 'INIT': {
+      return action.data;
+    }
+    case 'CREATE': {
+      newState = [action.data, ...state];
+      break;
+    }
+    case 'REMOVE': {
+      newState = state.filter((it) => it.id !== action.targetId);
+      break;
+    }
+    case 'EDIT': {
+      newState = state.map((it) =>
+        it.id === action.data.id ? { ...action.data } : it
+      );
+      break;
+    }
+    default:
+      return state;
+  }
+  return newState;
+};
 
-// COMPONENTS
-import MyHeader from './components/MyHeader';
-import MyButton from './components/MyButton';
+export const DiaryStateContext = React.createContext();
+export const DiaryDipatchContext = React.createContext();
 
 function App() {
-  const env = process.env;
-  env.PUBLIC_URL = env.PUBLIC_URL || '';
+  // `const [state, dispatch] = useReducer(reducer, 1);`
+  // - `state`: 상태
+  // - `dispatch`: 상태 변화를 일으킴(raise)
+  //    - dispatch(객체): 객체=action, action 객체는 reducer로 날아감 (함수형 업데이트 필요없이 dispatch 호출시 알아서 현재 state를 reducer 함수가 참조함)
+  // - `reducer`: 상태 변화를 처리
+  //    - reducer(state, action)
+  //    - state: 최신의 state
+  //    - action: dispatch에서 전달하는 action 객체
+  //      switch-case 문을 이용해 action.type에 따라 다른 값을 반환
+  // - `1`: state의 초기값
+  const [data, dispatch] = useReducer(reducer, []);
+
+  const dataId = useRef(0);
+
+  // CREATE
+  const onCreate = (date, content, emotion) => {
+    dispatch({
+      type: 'CREATE',
+      data: {
+        id: dataId.current,
+        date: new Date(date).getTime(),
+        content,
+        emotion,
+      },
+    });
+    dataId.current += 1;
+  };
+
+  // REMOVE
+  const onRemove = (targetId) => {
+    dispatch({ type: 'REMOVE', targetId });
+  };
+
+  // EDIT
+  const onEdit = (targetId, date, content, emotion) => {
+    dispatch({
+      type: 'EDIT',
+      data: {
+        id: targetId,
+        date: new Date().getTime(),
+        content,
+        emotion,
+      },
+    });
+  };
 
   return (
-    // BrowserRouter 컴포넌트로 감싸면
-    // 브라우저 url 과 mapping 될 수 있음
-    <BrowserRouter>
-      <div className="App">
-        <h1>App.js</h1>
-        {/* 컴포넌트 자체를 Prop으로 전달하기!
-          - text, onclick을 별도의 prop으로 전달할 필요가 없다는 장점~
-        */}
-        <MyHeader
-          headText={'App'}
-          leftChild={
-            <MyButton text={'왼쪽 버튼'} onClick={() => alert('왼쪽 클릭')} />
-          }
-          rightChild={
-            <MyButton
-              text={'오른쪽 버튼'}
-              onClick={() => alert('오른쪽 클릭')}
-            />
-          }
-        />
-        <MyButton
-          text={'버튼'}
-          onClick={() => alert('버튼 클릭')}
-          type={'positive'}
-        />
-        <MyButton
-          text={'버튼'}
-          onClick={() => alert('버튼 클릭')}
-          type={'negative'}
-        />
-        <MyButton text={'버튼'} onClick={() => alert('버튼 클릭')} />
-
-        {/* process.env.PUBLIC_URL: /public 폴더 경로
-        <img
-          src={process.env.PUBLIC_URL + `/assets/emotion1.png`}
-          alt="감정이미지"
-        />
-        <img
-          src={process.env.PUBLIC_URL + `/assets/emotion2.png`}
-          alt="감정이미지"
-        />
-        <img
-          src={process.env.PUBLIC_URL + `/assets/emotion3.png`}
-          alt="감정이미지"
-        />
-        <img
-          src={process.env.PUBLIC_URL + `/assets/emotion4.png`}
-          alt="감정이미지"
-        />
-        <img
-          src={process.env.PUBLIC_URL + `/assets/emotion5.png`}
-          alt="감정이미지"
-        /> */}
-
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/new" element={<New />} />
-          <Route path="/edit" element={<Edit />} />
-          <Route path="/diary/:id" element={<Diary />} />
-        </Routes>
-        {/* 페이지 깜빡임 -> mpa 특징 -> 사용 x (외부 사이트 연결시에만 사용 ) */}
-        {/* <a href={'/new'}>new 페이지 이동</a> */}
-        {/* 페이지 깜빡임 없이 페이지 변환 가능 */}
-        <RouteTest />
-      </div>
-    </BrowserRouter>
+    // BrowserRouter 컴포넌트로 감싸면 브라우저 url 과 mapping 될 수 있음
+    <DiaryStateContext.Provider value={data}>
+      <DiaryDipatchContext.Provider value={{ onCreate, onRemove, onEdit }}>
+        <BrowserRouter>
+          <div className="App">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/new" element={<New />} />
+              <Route path="/edit" element={<Edit />} />
+              <Route path="/diary/:id" element={<Diary />} />
+            </Routes>
+          </div>
+        </BrowserRouter>
+      </DiaryDipatchContext.Provider>
+    </DiaryStateContext.Provider>
   );
 }
 
