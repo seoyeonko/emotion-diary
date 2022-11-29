@@ -37,6 +37,39 @@ const reducer = (state, action) => {
 export const DiaryStateContext = React.createContext();
 export const DiaryDipatchContext = React.createContext();
 
+const dummyData = [
+  {
+    id: 1,
+    emotion: 1,
+    content: '오늘의 일기 1번',
+    date: 1669734704862,
+  },
+  {
+    id: 2,
+    emotion: 2,
+    content: '오늘의 일기 2번',
+    date: 1669734704863,
+  },
+  {
+    id: 3,
+    emotion: 3,
+    content: '오늘의 일기 3번',
+    date: 1669734704864,
+  },
+  {
+    id: 4,
+    emotion: 4,
+    content: '오늘의 일기 4번',
+    date: 1669734704865,
+  },
+  {
+    id: 5,
+    emotion: 5,
+    content: '오늘의 일기 5번',
+    date: 1669734704866,
+  },
+];
+
 function App() {
   // `const [state, dispatch] = useReducer(reducer, 1);`
   // - `state`: 상태
@@ -48,7 +81,7 @@ function App() {
   //    - action: dispatch에서 전달하는 action 객체
   //      switch-case 문을 이용해 action.type에 따라 다른 값을 반환
   // - `1`: state의 초기값
-  const [data, dispatch] = useReducer(reducer, []);
+  const [data, dispatch] = useReducer(reducer, dummyData);
 
   const dataId = useRef(0);
 
